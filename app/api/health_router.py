@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.core.settings import HealthRouterResponse
-from app.contracts.http_status import error_responses
+from app.interfaces.http.http_status import error_responses
 
 router = APIRouter(tags=["health"])
 
