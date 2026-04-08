@@ -8,7 +8,6 @@ from app.api.health_router import router as health_router
 
 setup_logging()
 
-
 def create_app() -> FastAPI:
     settings = Settings()
 
