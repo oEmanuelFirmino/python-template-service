@@ -1,0 +1,9 @@
+from typing import  TypeVar, Protocol
+
+T = TypeVar("T")
+
+
+class BaseRepository(Protocol[T]):
+    def get(self, id: str) -> T: ...
+    def list(self) -> list[T]: ...
+    def create(self, entity: T) -> T: ...
