@@ -1,18 +1,18 @@
 from functools import lru_cache
-from domain.services.user_service import UserService
-from infrastructure.repositories.user_repo import UserRepository
+from typing import Type, TypeVar, Callable, Dict, Any
+
+T = TypeVar("T")
 
 
 class Container:
+    _registry: Dict[Type[Any], Callable[[], Any]] = {}
 
-    @staticmethod
-    @lru_cache
-    def user_repository() -> UserRepository:
-        return UserRepository()
+    @classmethod
+    def register(cls, key: Type[T], factory: Callable[[], T]) -> None:
+        cls._registry[key] = lru_cache(factory)
 
-    @staticmethod
-    @lru_cache
-    def user_service() -> UserService:
-        return UserService(
-            repo=Container.user_repository()
-        )
+    @classmethod
+    def resolve(cls, key: Type[T]) -> T:
+        if key not in cls._registry:
+            raise ValueError(f"No provider registered for {key}")
+        return cls._registry[key]()
