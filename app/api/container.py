@@ -1,4 +1,5 @@
 from functools import lru_cache
+import inspect
 from typing import Type, TypeVar, Callable, Dict, Any
 
 T = TypeVar("T")
@@ -9,7 +10,7 @@ class Container:
 
     @classmethod
     def register(cls, key: Type[T], factory: Callable[[], T]) -> None:
-        cls._registry[key] = lru_cache(factory)
+        cls._registry[key] = factory
 
     @classmethod
     def resolve(cls, key: Type[T]) -> T:

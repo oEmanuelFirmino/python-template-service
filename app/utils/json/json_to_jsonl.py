@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+from decimal import Decimal
 from pathlib import Path
 from typing import Iterable, Union, Any
 
@@ -14,6 +15,12 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
+class _JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
 
 
 def _ensure_iterable(data: Any) -> Iterable[dict]:
@@ -28,7 +35,6 @@ def _validate_record(record: Any) -> dict:
     if not isinstance(record, dict):
         raise ValueError(f"Invalid record type: {type(record)}. Expected dict.")
     return record
-
 
 
 def convert_json_to_jsonl(
@@ -50,10 +56,9 @@ def convert_json_to_jsonl(
     with output_path.open("w", encoding="utf-8") as f:
         for record in records:
             record = _validate_record(record)
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            f.write(json.dumps(record, ensure_ascii=False, cls=_JsonEncoder) + "\n")
 
     logger.info("Conversion completed (standard mode)")
-
 
 
 def convert_large_json_array_to_jsonl(
@@ -76,11 +81,10 @@ def convert_large_json_array_to_jsonl(
         count = 0
         for item in ijson.items(f_in, "item"):
             item = _validate_record(item)
-            f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
+            f_out.write(json.dumps(item, ensure_ascii=False, cls=_JsonEncoder) + "\n")
             count += 1
 
     logger.info(f"Conversion completed (stream mode) - {count} records written")
-
 
 
 def convert(
@@ -92,7 +96,6 @@ def convert(
         convert_large_json_array_to_jsonl(input_path, output_path)
     else:
         convert_json_to_jsonl(input_path, output_path)
-
 
 
 def _build_parser():
